@@ -1,0 +1,85 @@
+﻿@model ASM_C_3.Models.Invoice
+@{
+    ViewData["Title"] = "Create Invoice";
+}
+
+<h1 class="mb-3">Create Invoice</h1>
+
+<form asp-action="Create" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="row g-3">
+        <!-- Người dùng -->
+        <div class="col-md-6">
+            <label asp-for="UserId" class="form-label">Customer</label>
+            <select asp-for="UserId" class="form-select" asp-items="@(new SelectList(ViewBag.Users, "UserId", "FullName"))">
+                <option value="">-- Select Customer --</option>
+            </select>
+            <span asp-validation-for="UserId" class="text-danger"></span>
+        </div>
+
+        <!-- Phương thức thanh toán -->
+        <div class="col-md-6">
+            <label asp-for="PayMethod" class="form-label">Payment Method</label>
+            <select asp-for="PayMethod" class="form-select">
+                <option value="">-- Select Method --</option>
+                @foreach (var method in Enum.GetValues(typeof(ASM_C_3.Models.PayMethod)))
+                {
+                    <option value="@method">@method</option>
+                }
+            </select>
+            <span asp-validation-for="PayMethod" class="text-danger"></span>
+        </div>
+
+        <!-- Ngày tạo -->
+        <div class="col-md-6">
+            <label asp-for="CreatedDate" class="form-label">Created Date</label>
+            <input asp-for="CreatedDate" class="form-control" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+            <span asp-validation-for="CreatedDate" class="text-danger"></span>
+        </div>
+
+        <!-- Tổng tiền -->
+        <div class="col-md-6">
+            <label asp-for="TotalAmount" class="form-label">Total Amount</label>
+            <input asp-for="TotalAmount" class="form-control" />
+            <span asp-validation-for="TotalAmount" class="text-danger"></span>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+
+    <h4>Invoice Details</h4>
+    <div id="invoice-details">
+        <div class="row g-3 mb-3">
+            <!-- Chọn sản phẩm -->
+            <div class="col-md-5">
+                <label class="form-label">Variant</label>
+                <select name="VariantId" class="form-select" asp-items="@(new SelectList(ViewBag.Variants, "VariantId", "Name"))">
+                    <option value="">-- Select Variant --</option>
+                </select>
+            </div>
+
+            <!-- Số lượng -->
+            <div class="col-md-3">
+                <label class="form-label">Quantity</label>
+                <input name="Quantity" type="number" class="form-control" min="1" value="1" />
+            </div>
+
+            <!-- Giá -->
+            <div class="col-md-3">
+                <label class="form-label">Unit Price</label>
+                <input name="UnitPrice" type="number" step="0.01" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-action="Index" class="btn btn-secondary">Back</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

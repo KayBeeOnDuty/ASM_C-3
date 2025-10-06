@@ -1,0 +1,86 @@
+﻿@model ASM_C_3.Models.Product
+
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<h1 class="mb-3">Product Details</h1>
+
+@if (Model == null)
+{
+    <div class="alert alert-danger">Product not found.</div>
+}
+else
+{
+    <div class="card mb-3 shadow-sm">
+        <div class="row g-0">
+            <div class="col-md-4 d-flex align-items-center justify-content-center p-3">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid rounded" style="max-height: 250px;" />
+                }
+                else
+                {
+                    <div class="text-muted fst-italic">No image available</div>
+                }
+            </div>
+
+            <div class="col-md-8">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Name</dt>
+                        <dd class="col-sm-8">@Model.Name</dd>
+
+                        <dt class="col-sm-4">Category</dt>
+                        <dd class="col-sm-8">@Model.Category?.Name</dd>
+
+                        <dt class="col-sm-4">Supplier</dt>
+                        <dd class="col-sm-8">@Model.Supplier?.Name</dd>
+
+                        <dt class="col-sm-4">Description</dt>
+                        <dd class="col-sm-8">
+                            @if (string.IsNullOrWhiteSpace(Model.Description))
+                            {
+                                <span class="text-muted">No description</span>
+                            }
+                            else
+                            {
+                                @Model.Description
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Variants</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Variants != null && Model.Variants.Any())
+                            {
+                                <ul class="mb-0">
+                                    @foreach (var variant in Model.Variants)
+                                    {
+                                        <li>
+                                            <strong>@variant.Name</strong> -
+                                            @String.Format("{0:0.##}", variant.Price)₫
+                                            @if (!variant.IsAvailable)
+                                            {
+                                                <span class="badge bg-secondary ms-2">Unavailable</span>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No variants available</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-primary">Edit</a>
+        <a asp-action="Delete" asp-route-id="@Model.ProductId" class="btn btn-danger">Delete</a>
+        <a asp-action="Index" class="btn btn-secondary">Back</a>
+    </div>
+}

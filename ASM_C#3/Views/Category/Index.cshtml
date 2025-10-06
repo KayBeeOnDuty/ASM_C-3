@@ -1,0 +1,44 @@
+﻿@model IEnumerable<ASM_C_3.Models.Category>
+@{
+    ViewData["Title"] = "Categories";
+}
+<h1 class="mb-3">Categories</h1>
+
+<div class="d-flex justify-content-between mb-3">
+    <a asp-action="Create" class="btn btn-primary">Create New</a>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">No categories found.</div>
+}
+else
+{
+    <table class="table table-striped table-bordered align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th class="text-end">Total Products</th>
+                <th style="width:180px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td>@c.Name</td>
+                    <td>@c.Description</td>
+                    <td class="text-end">@((c.Products?.Count ?? 0))</td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a asp-action="Details" asp-route-id="@c.CategoryId" class="btn btn-outline-secondary">Details</a>
+                            <a asp-action="Edit" asp-route-id="@c.CategoryId" class="btn btn-outline-primary">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@c.CategoryId" class="btn btn-outline-danger">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

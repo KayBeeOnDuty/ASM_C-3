@@ -18,5 +18,6 @@ namespace ASM_C_3.Models
         public DbSet<Invoice> Invoices { get; set; } // Hóa đơn
         public DbSet<InvoiceDetail> InvoiceDetails { get; set; } // Chi tiết hóa đơn
 
+
     }
 }

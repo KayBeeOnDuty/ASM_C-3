@@ -1,0 +1,50 @@
+﻿@model ASM_C_3.Models.Supplier
+
+@{
+    ViewData["Title"] = "Supplier Details";
+}
+
+<h2>Supplier Details</h2>
+
+<div class="card p-3 mb-3 shadow-sm">
+    <dl class="row">
+        <dt class="col-sm-3">Name</dt>
+        <dd class="col-sm-9">@Model.Name</dd>
+
+        <dt class="col-sm-3">Contact Info</dt>
+        <dd class="col-sm-9">@Model.ContactInfo</dd>
+
+        <dt class="col-sm-3">Address</dt>
+        <dd class="col-sm-9">@Model.Address</dd>
+    </dl>
+</div>
+
+@if (Model.Products != null && Model.Products.Any())
+{
+    <h4>Products from this Supplier</h4>
+    <table class="table table-bordered table-hover">
+        <thead class="table-secondary">
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Variants Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in Model.Products)
+            {
+                <tr>
+                    <td>@product.Name</td>
+                    <td>@product.Category?.Name</td>
+                    <td>@(product.Variants?.Count() ?? 0)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p class="text-muted">This supplier has no products.</p>
+}
+
+<a asp-action="Index" class="btn btn-secondary mt-2">Back</a>

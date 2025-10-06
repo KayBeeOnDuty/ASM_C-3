@@ -1,0 +1,63 @@
+﻿@model IEnumerable<ASM_C_3.Models.Invoice>
+
+@{
+    ViewData["Title"] = "Invoices";
+}
+
+<h1 class="mb-3">Invoices</h1>
+
+<div class="d-flex justify-content-between mb-3">
+    <a asp-action="Create" class="btn btn-primary">Create New Invoice</a>
+</div>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">No invoices found.</div>
+}
+else
+{
+    <table class="table table-striped table-bordered align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>User</th>
+                <th>Payment Method</th>
+                <th>Created Date</th>
+                <th class="text-end">Total Amount</th>
+                <th style="width:180px;" class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var invoice in Model)
+            {
+                <tr>
+                    <td>
+                        @if (invoice.User != null)
+                        {
+                            @invoice.User.FullName
+                        }
+                        else
+                        {
+                            <span class="text-muted">Unknown</span>
+                        }
+                    </td>
+
+                    <td>@invoice.PayMethod</td>
+
+                    <td>@invoice.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+
+                    <td class="text-end">
+                        @String.Format("{0:N0} ₫", invoice.TotalAmount)
+                    </td>
+
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a asp-action="Details" asp-route-id="@invoice.InvoiceId" class="btn btn-outline-secondary">Details</a>
+                            <a asp-action="Edit" asp-route-id="@invoice.InvoiceId" class="btn btn-outline-primary">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@invoice.InvoiceId" class="btn btn-outline-danger">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

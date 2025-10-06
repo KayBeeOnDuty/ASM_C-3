@@ -12,7 +12,7 @@ namespace ASM_C_3.Models
         public string Username { get; set; } = string.Empty; // Tên đăng nhập
 
         [Required, StringLength(100)]
-        public string PasswordHash { get; set; } = string.Empty; // Mật khẩu (đã mã hóa)
+        public string PasswordHash { get; set; } = string.Empty; // Mật khẩu
 
         [StringLength(100)]
         public string? FullName { get; set; } // Họ tên người dùng
