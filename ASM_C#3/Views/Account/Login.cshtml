@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "Login";
+}
+<h2>Login</h2>
+<form asp-action="Login" method="post">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-control" id="username" name="username" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-control" id="password" name="password" type="password" />
+    </div>
+    <div class="text-danger">@Html.ValidationSummary()</div>
+    <button class="btn btn-primary" type="submit">Login</button>
+    <a class="btn btn-link" asp-action="Register">Register</a>
+</form>

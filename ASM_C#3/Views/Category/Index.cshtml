@@ -1,11 +1,19 @@
 ﻿@model IEnumerable<ASM_C_3.Models.Category>
+
 @{
     ViewData["Title"] = "Categories";
 }
+
 <h1 class="mb-3">Categories</h1>
 
 <div class="d-flex justify-content-between mb-3">
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
+    @* Chỉ Admin và Staff mới có quyền tạo mới *@
+    @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+    {
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Create New
+        </a>
+    }
 </div>
 
 @if (Model == null || !Model.Any())
@@ -28,13 +36,33 @@ else
             {
                 <tr>
                     <td>@c.Name</td>
-                    <td>@c.Description</td>
+                    <td>
+                        @if (string.IsNullOrWhiteSpace(c.Description))
+                        {
+                            <span class="text-muted fst-italic">No description</span>
+                        }
+                        else
+                        {
+                            @c.Description
+                        }
+                    </td>
                     <td class="text-end">@((c.Products?.Count ?? 0))</td>
                     <td>
                         <div class="btn-group btn-group-sm" role="group">
-                            <a asp-action="Details" asp-route-id="@c.CategoryId" class="btn btn-outline-secondary">Details</a>
-                            <a asp-action="Edit" asp-route-id="@c.CategoryId" class="btn btn-outline-primary">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@c.CategoryId" class="btn btn-outline-danger">Delete</a>
+                            <a asp-action="Details" asp-route-id="@c.CategoryId" class="btn btn-outline-secondary">
+                                <i class="bi bi-eye"></i> Details
+                            </a>
+
+                            @* Chỉ Admin và Staff mới có quyền Edit/Delete *@
+                            @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@c.CategoryId" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@c.CategoryId" class="btn btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            }
                         </div>
                     </td>
                 </tr>

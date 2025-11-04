@@ -1,4 +1,5 @@
-﻿using ASM_C_3.Interface;
+﻿using ASM_C_3.Data;
+using ASM_C_3.Interface;
 using ASM_C_3.Models;
 using Microsoft.EntityFrameworkCore;
 

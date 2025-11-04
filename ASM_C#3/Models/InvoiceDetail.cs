@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ASM_C_3.Models
@@ -7,15 +8,15 @@ namespace ASM_C_3.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int InvoiceDetailId { get; set; } // Mã dòng chi tiết hóa đơn
-
+        [Range(1, int.MaxValue, ErrorMessage = "Select an invoice")]
         public int InvoiceId { get; set; }
-        public Invoice? Invoice { get; set; } // Hóa đơn cha
-
+        [Range(1, int.MaxValue, ErrorMessage = "Select a variant")]
         public int VariantId { get; set; }
-        public Variant? Variant { get; set; } // Biến thể được bán
 
-        public int Quantity { get; set; } // Số lượng sản phẩm
-        public decimal UnitPrice { get; set; } // Giá tại thời điểm bán
-        public decimal Subtotal { get; set; } // Thành tiền (Quantity * UnitPrice)
+        [Range(1, int.MaxValue)] public int Quantity { get; set; } = 1;
+        [Range(0, int.MaxValue)] public int UnitPrice { get; set; }
+        [Range(0, int.MaxValue)] public int SubTotal { get; set; }
+        [ValidateNever] public Invoice Invoice { get; set; } = null!;
+        [ValidateNever] public Variant Variant { get; set; } = null; // Biến thể được bán
     }
 }

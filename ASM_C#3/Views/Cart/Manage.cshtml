@@ -1,0 +1,34 @@
+﻿@model IEnumerable<ASM_C_3.Models.Cart>
+
+@{
+    ViewData["Title"] = "Cart Management";
+}
+
+<h2 class="text-center mb-4">📦 Quản lý giỏ hàng</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Hiện chưa có giỏ hàng nào được tạo.</div>
+}
+else
+{
+    <table class="table table-bordered table-striped text-center align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Cart ID</th>
+                <th>User ID</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cart in Model)
+            {
+                <tr>
+                    <td>@cart.CartId</td>
+                    <td>@cart.UserId</td>
+                    <td>@cart.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

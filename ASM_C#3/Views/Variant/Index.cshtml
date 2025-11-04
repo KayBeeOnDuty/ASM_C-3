@@ -1,0 +1,87 @@
+﻿@model IEnumerable<ASM_C_3.Models.Variant>
+
+@{
+    ViewData["Title"] = "Variant List";
+    var cultureVN = new System.Globalization.CultureInfo("vi-VN");
+}
+
+<h1 class="mb-3">Variant List</h1>
+
+<!-- 🔹 Nút Create chỉ dành cho Admin và Staff -->
+@if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Create New Variant
+        </a>
+    </p>
+}
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">No variants found.</div>
+}
+else
+{
+    <table class="table table-bordered table-striped align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.First().Name)</th>
+                <th>@Html.DisplayNameFor(model => model.First().Price)</th>
+                <th>@Html.DisplayNameFor(model => model.First().IsAvailable)</th>
+                <th>Product</th>
+                <th class="text-center" style="width:240px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">@item.Name</td>
+
+                    <!-- 🔹 Định dạng tiền VNĐ -->
+                    <td>@string.Format(cultureVN, "{0:C0}", item.Price)</td>
+
+                    <td>
+                        @if (item.IsAvailable)
+                        {
+                            <span class="badge bg-success">Available</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Unavailable</span>
+                        }
+                    </td>
+                    <td>@item.Product?.Name</td>
+
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a asp-action="Details" asp-route-id="@item.VariantId" class="btn btn-outline-info">
+                                <i class="bi bi-eye"></i> Details
+                            </a>
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.VariantId" class="btn btn-outline-warning">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.VariantId" class="btn btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            }
+
+                            @if (User.IsInRole("User"))
+                            {
+                                <form asp-action="AddToCart" method="post" asp-route-variantId="@item.VariantId" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-success">
+                                        <i class="bi bi-cart-plus"></i> Add to Cart
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

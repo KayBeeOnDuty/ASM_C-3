@@ -6,13 +6,14 @@
 
 <h1 class="mb-3">Products</h1>
 
-<div class="d-flex justify-content-between mb-3">
-    <div>
+@if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+{
+    <div class="d-flex justify-content-between mb-3">
         <a asp-action="Create" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Create New Product
         </a>
     </div>
-</div>
+}
 
 @if (Model == null || !Model.Any())
 {
@@ -23,24 +24,22 @@ else
     <table class="table table-striped table-hover align-middle">
         <thead class="table-light">
             <tr>
-                <th style="width: 100px;">Image</th>
+                <th>Image</th>
                 <th>Name</th>
                 <th>Category</th>
                 <th>Supplier</th>
                 <th>Description</th>
-                <th class="text-center" style="width: 220px;">Actions</th>
+                <th class="text-center">Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var p in Model)
             {
                 <tr>
-                    <!-- Image -->
                     <td>
                         @if (!string.IsNullOrWhiteSpace(p.ImageUrl))
                         {
-                            <img src="@p.ImageUrl"
-                                 alt="@p.Name"
+                            <img src="@p.ImageUrl" alt="@p.Name"
                                  class="img-thumbnail rounded"
                                  style="width:80px; height:80px; object-fit:cover;" />
                         }
@@ -50,37 +49,105 @@ else
                         }
                     </td>
 
-                    <!-- Product Info -->
                     <td class="fw-semibold">@p.Name</td>
                     <td>@(p.Category?.Name ?? "—")</td>
                     <td>@(p.Supplier?.Name ?? "—")</td>
-                    <td>
-                        @if (string.IsNullOrWhiteSpace(p.Description))
-                        {
-                            <span class="text-muted fst-italic">No description</span>
-                        }
-                        else
-                        {
-                            @p.Description
-                        }
-                    </td>
+                    <td>@(p.Description ?? "—")</td>
 
-                    <!-- Actions -->
                     <td class="text-center">
-                        <div class="btn-group btn-group-sm" role="group">
+                        <div class="btn-group btn-group-sm">
                             <a asp-action="Details" asp-route-id="@p.ProductId" class="btn btn-outline-secondary">
                                 <i class="bi bi-eye"></i> Details
                             </a>
-                            <a asp-action="Edit" asp-route-id="@p.ProductId" class="btn btn-outline-primary">
-                                <i class="bi bi-pencil-square"></i> Edit
-                            </a>
-                            <a asp-action="Delete" asp-route-id="@p.ProductId" class="btn btn-outline-danger">
-                                <i class="bi bi-trash"></i> Delete
-                            </a>
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@p.ProductId" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@p.ProductId" class="btn btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            }
+                            else if (User.IsInRole("User"))
+                            {
+                                <button type="button"
+                                        class="btn btn-success"
+                                        onclick="showVariantModal(@p.ProductId, '@p.Name')">
+                                    <i class="bi bi-cart-plus"></i> Add to Cart
+                                </button>
+                            }
                         </div>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
+}
+
+<!-- 🔽 Modal chọn Variant -->
+<div class="modal fade" id="variantModal" tabindex="-1" aria-labelledby="variantModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="variantModalLabel">Chọn biến thể sản phẩm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Biến thể</label>
+                        <select id="variantDropdown" name="variantId" class="form-select" required>
+                            <option disabled selected>Đang tải...</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Số lượng</label>
+                        <input type="number" name="quantity" class="form-control" value="1" min="1" required />
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">🛒 Thêm vào giỏ hàng</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const modal = new bootstrap.Modal(document.getElementById('variantModal'));
+        const dropdown = document.getElementById('variantDropdown');
+
+        function showVariantModal(productId, productName) {
+            document.getElementById('variantModalLabel').innerText = `Chọn biến thể cho "${productName}"`;
+            dropdown.innerHTML = '<option disabled selected>Đang tải...</option>';
+
+            fetch(`/Variant/GetByProduct?productId=${productId}`)
+                .then(response => response.json())
+                .then(data => {
+                    dropdown.innerHTML = '';
+                    if (data.message) {
+                        dropdown.innerHTML = `<option disabled>${data.message}</option>`;
+                    } else {
+                        data.forEach(v => {
+                            const opt = document.createElement('option');
+                            opt.value = v.variantId;
+                            opt.textContent = `${v.name} - ${v.price.toLocaleString()}₫`;
+                            dropdown.appendChild(opt);
+                        });
+                    }
+                    modal.show();
+                })
+                .catch(err => {
+                    dropdown.innerHTML = `<option disabled>Lỗi tải dữ liệu</option>`;
+                    console.error(err);
+                });
+        }
+    </script>
 }

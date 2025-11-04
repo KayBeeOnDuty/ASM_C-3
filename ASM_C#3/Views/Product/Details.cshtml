@@ -78,9 +78,22 @@ else
         </div>
     </div>
 
+    <!-- 🔹 Nút chức năng -->
     <div class="d-flex gap-2">
-        <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-primary">Edit</a>
-        <a asp-action="Delete" asp-route-id="@Model.ProductId" class="btn btn-danger">Delete</a>
-        <a asp-action="Index" class="btn btn-secondary">Back</a>
+        @* Chỉ Admin và Staff được sửa hoặc xóa *@
+        @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-primary">
+                <i class="bi bi-pencil-square"></i> Edit
+            </a>
+            <a asp-action="Delete" asp-route-id="@Model.ProductId" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Delete
+            </a>
+        }
+
+        @* Người dùng nào cũng có thể quay lại *@
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
     </div>
 }

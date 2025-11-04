@@ -1,74 +1,201 @@
-﻿<!DOCTYPE html>
+﻿@using ASM_C_3.Data
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TraNghe Management</title>
+    <title>@ViewData["Title"] - Trà Nghé IT</title>
+
+    <!-- Bootstrap & Icons -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/ASM_C_3.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/BanhMyIT.styles.css" asp-append-version="true" />
+
+    <style>
+        /* Navbar custom */
+        .navbar-custom {
+            background: linear-gradient(90deg, #fff, #f8f9fa);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: #0d6efd !important;
+        }
+
+        .nav-link {
+            transition: all 0.2s ease-in-out;
+        }
+
+            .nav-link:hover {
+                color: #0d6efd !important;
+                text-decoration: none;
+            }
+
+        .navbar-text strong {
+            color: #0d6efd;
+        }
+
+        /* Main container */
+        main {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        /* Footer */
+        footer {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+
+        /* Alerts */
+        .alert {
+            border-radius: 10px;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-light">
+
+    <!-- 🔹 HEADER / NAVBAR -->
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-light border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-bold text-success" asp-area="" asp-controller="Home" asp-action="Index">
-                    🧋 TraNghe
+        <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-cup-hot-fill me-1"></i> Trà Nghé IT
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Category" asp-action="Index">Categories</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Product" asp-action="Index">Products</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Invoice" asp-action="Index">Invoices</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="User" asp-action="Index">Users</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Supplier" asp-action="Index">Suppliers</a>
-                        </li>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <!-- Left Menu -->
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Product" asp-action="Index">Products</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Category" asp-action="Index">Categories</a></li>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminMenu" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-gear-fill me-1"></i> Admin
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Variant" asp-action="Index">Manage Variants</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Supplier" asp-action="Index">Manage Suppliers</a></li>
+                                    <li><a class="dropdown-item" asp-controller="User" asp-action="Index">Manage Users</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Invoice" asp-action="Index">Manage Invoices</a></li>
+                                </ul>
+                            </li>
+                        }
+
+                        @if (User.IsInRole("Staff"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="staffMenu" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-briefcase-fill me-1"></i> Staff
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Variant" asp-action="Index">Manage Variants</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Supplier" asp-action="Index">Manage Suppliers</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Invoice" asp-action="Index">All Invoices</a></li>
+                                </ul>
+                            </li>
+                        }
+
+                        @if (User.IsInRole("User"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Invoice" asp-action="My"><i class="bi bi-receipt"></i> My Invoices</a>
+                            </li>
+                        }
+                    </ul>
+
+                    <!-- Right Menu -->
+                    <ul class="navbar-nav ms-auto">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            @if (User.IsInRole("User"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Cart" asp-action="Index"><i class="bi bi-cart3"></i> Cart</a>
+                                </li>
+                            }
+
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Profile"><i class="bi bi-person-circle"></i> Profile</a>
+                            </li>
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Account" asp-action="CreateStaff"><i class="bi bi-person-plus"></i> Create Staff</a>
+                                </li>
+                            }
+
+                            <li class="nav-item d-flex align-items-center">
+                                <span class="navbar-text me-2">Hello, <strong>@User.Identity?.Name</strong></span>
+                            </li>
+
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-outline-danger btn-sm" type="submit">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">Login</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Register">Register</a></li>
+                        }
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
 
-    <div class="container">
-        @* Hiển thị thông báo thành công *@
+    <!-- 🔹 MAIN CONTENT -->
+    <div class="container my-4">
         @if (TempData["Success"] != null)
         {
-            <div class="alert alert-success alert-dismissible fade show mt-2" role="alert">
-                @TempData["Success"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         }
 
-        <main role="main" class="pb-3">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <main role="main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container text-center py-2">
-            &copy; 2025 - TraNghe Milk Tea Management -
-            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <!-- 🔹 FOOTER -->
+    <footer class="border-top py-3 mt-5">
+        <div class="container text-center small">
+            &copy; @DateTime.Now.Year <strong>Trà Nghé IT</strong> —
+            <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none">Privacy</a>
         </div>
     </footer>
 

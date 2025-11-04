@@ -1,0 +1,124 @@
+﻿@model ASM_C_3.Models.Cart
+
+@{
+    ViewData["Title"] = "Giỏ hàng của bạn";
+}
+
+<h2 class="text-center my-4">@ViewData["Title"]</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (Model?.CartDetails == null || !Model.CartDetails.Any())
+{
+    <div class="alert alert-info text-center p-4 rounded shadow-sm">
+        <h5>🛒 Giỏ hàng trống.</h5>
+        <a asp-controller="Product" asp-action="Index" class="btn btn-primary mt-2">Tiếp tục mua hàng</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered text-center align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Biến thể</th>
+                    <th>Giá</th>
+                    <th>Số lượng</th>
+                    <th>Thành tiền</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.CartDetails)
+                {
+                    <tr>
+                        <td style="width: 80px;">
+                            <img src="@item.Variant.Product.ImageUrl" alt="@item.Variant.Product.Name" class="img-fluid rounded" />
+                        </td>
+                        <td>
+                            <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Variant.Product.ProductId">
+                                @item.Variant.Product.Name
+                            </a>
+                        </td>
+                        <td>@item.Variant.Name</td>
+                        <td>@item.UnitPrice.ToString("N0") ₫</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.SubTotal.ToString("N0") ₫</td>
+                        <td>
+                            <form asp-action="RemoveFromCart" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="cartDetailId" value="@item.CartDetailId" />
+                                <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="5" class="text-end fw-bold">Tổng cộng:</td>
+                    <td class="fw-bold">@Model.CartDetails.Sum(i => i.SubTotal).ToString("N0") ₫</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between mt-3">
+        <a asp-controller="Product" asp-action="Index" class="btn btn-outline-primary">
+            ← Tiếp tục mua hàng
+        </a>
+
+        <div>
+            <form asp-action="ClearCart" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-warning">Xóa toàn bộ</button>
+            </form>
+
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+                Thanh toán
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Thanh toán -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="Checkout" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="checkoutModalLabel">Xác nhận thanh toán</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="PayMethod" class="form-label">Phương thức thanh toán</label>
+                            <select class="form-select" id="PayMethod" name="payMethod" required>
+                                <option value="Cash">Tiền mặt khi nhận hàng</option>
+                                <option value="MobilePayment"> Chuyển khoản</option>
+                                <option value="CreditCard">Quẹt thẻ</option>
+                                <option value="DebitCard">Debit Card</option>
+                            </select>
+                        </div>
+
+                        <p class="fw-bold mt-2">
+                            Tổng thanh toán: @Model.CartDetails.Sum(i => i.SubTotal).ToString("N0") ₫
+                        </p>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Đặt hàng</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

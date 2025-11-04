@@ -1,10 +1,13 @@
-﻿using ASM_C_3.Interface;
+﻿using ASM_C_3.Data;
+using ASM_C_3.Interface;
 using ASM_C_3.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ASM_C_3.Controllers
 {
+    [Authorize] // Yêu cầu đăng nhập để truy cập Product Controller
     public class ProductController : Controller
     {
         private readonly IProductService _productService;
@@ -30,14 +33,16 @@ namespace ASM_C_3.Controllers
             ViewBag.Suppliers = new SelectList(_context.Suppliers.ToList(), "SupplierId", "Name", selectedSupplierId);
         }
 
-        // GET: Product
+        // -------------------- INDEX --------------------
+        [AllowAnonymous] // Cho phép bất kỳ ai (kể cả chưa đăng nhập) xem sản phẩm
         public async Task<IActionResult> Index()
         {
             var products = await _productService.GetAllAsync();
             return View(products);
         }
 
-        // GET: Product/Details/5
+        // -------------------- DETAILS --------------------
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var product = await _productService.GetByIdAsync(id);
@@ -45,21 +50,21 @@ namespace ASM_C_3.Controllers
             return View(product);
         }
 
-        // GET: Product/Create
+        // -------------------- CREATE --------------------
+        [Authorize(Roles = "Admin,Staff")] // Chỉ Admin và Staff có thể tạo
         public IActionResult Create()
         {
             PopulateDropdowns();
             return View();
         }
 
-        // POST: Product/Create
         [HttpPost]
+        [Authorize(Roles = "Admin,Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product product, IFormFile? ImageFile)
         {
             if (ModelState.IsValid)
             {
-                // 🔹 Nếu người dùng có chọn file ảnh
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
                     string uploadsFolder = Path.Combine(_env.WebRootPath, "images");
@@ -77,23 +82,16 @@ namespace ASM_C_3.Controllers
                 }
 
                 await _productService.AddAsync(product);
-                TempData["Success"] = "Product added successfully!";
+                TempData["Success"] = "Sản phẩm đã được thêm thành công!";
                 return RedirectToAction(nameof(Index));
-            }
-
-            foreach (var kv in ModelState)
-            {
-                foreach (var err in kv.Value.Errors)
-                {
-                    _logger.LogWarning("Create Product ModelState error for {Field}: {Error}", kv.Key, err.ErrorMessage);
-                }
             }
 
             PopulateDropdowns(product.CategoryId, product.SupplierId);
             return View(product);
         }
 
-        // GET: Product/Edit/5
+        // -------------------- EDIT --------------------
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Edit(int id)
         {
             var product = await _productService.GetByIdAsync(id);
@@ -103,8 +101,8 @@ namespace ASM_C_3.Controllers
             return View(product);
         }
 
-        // POST: Product/Edit/5
         [HttpPost]
+        [Authorize(Roles = "Admin,Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Product product, IFormFile? ImageFile)
         {
@@ -112,7 +110,6 @@ namespace ASM_C_3.Controllers
 
             if (ModelState.IsValid)
             {
-                // 🔹 Nếu người dùng upload ảnh mới
                 if (ImageFile != null && ImageFile.Length > 0)
                 {
                     string uploadsFolder = Path.Combine(_env.WebRootPath, "images");
@@ -130,29 +127,21 @@ namespace ASM_C_3.Controllers
                 }
                 else
                 {
-                    // 🔹 Giữ nguyên ảnh cũ nếu không upload mới
                     var existingProduct = await _productService.GetByIdAsync(product.ProductId);
                     product.ImageUrl = existingProduct?.ImageUrl;
                 }
 
                 await _productService.UpdateAsync(product);
-                TempData["Success"] = "Product updated successfully!";
+                TempData["Success"] = "Sản phẩm đã được cập nhật thành công!";
                 return RedirectToAction(nameof(Index));
-            }
-
-            foreach (var kv in ModelState)
-            {
-                foreach (var err in kv.Value.Errors)
-                {
-                    _logger.LogWarning("Edit Product ModelState error for {Field}: {Error}", kv.Key, err.ErrorMessage);
-                }
             }
 
             PopulateDropdowns(product.CategoryId, product.SupplierId);
             return View(product);
         }
 
-        // GET: Product/Delete/5
+        // -------------------- DELETE --------------------
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<IActionResult> Delete(int id)
         {
             var product = await _productService.GetByIdAsync(id);
@@ -160,13 +149,13 @@ namespace ASM_C_3.Controllers
             return View(product);
         }
 
-        // POST: Product/DeleteConfirmed/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin,Staff")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _productService.DeleteAsync(id);
-            TempData["Success"] = "Product deleted successfully!";
+            TempData["Success"] = "Sản phẩm đã được xóa thành công!";
             return RedirectToAction(nameof(Index));
         }
     }

@@ -1,14 +1,11 @@
 ﻿@model IEnumerable<ASM_C_3.Models.Invoice>
 
 @{
-    ViewData["Title"] = "Invoices";
+    var title = (string?)ViewData["Title"] ?? ((User.IsInRole("Admin") || User.IsInRole("Staff")) ? "Invoices" : "My Invoices");
+    ViewData["Title"] = title;
 }
 
-<h1 class="mb-3">Invoices</h1>
-
-<div class="d-flex justify-content-between mb-3">
-    <a asp-action="Create" class="btn btn-primary">Create New Invoice</a>
-</div>
+<h1 class="mb-3">@title</h1>
 
 @if (Model == null || !Model.Any())
 {
@@ -22,38 +19,103 @@ else
                 <th>User</th>
                 <th>Payment Method</th>
                 <th>Created Date</th>
+                <th>Status</th>
                 <th class="text-end">Total Amount</th>
-                <th style="width:180px;" class="text-center">Actions</th>
+                <th class="text-center" style="width:300px;">Actions</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var invoice in Model)
             {
+                var status = invoice.Status;
+                var statusBadge = status switch
+                {
+                    ASM_C_3.Models.OrderStatus.Pending => "badge bg-warning text-dark",
+                    ASM_C_3.Models.OrderStatus.Confirmed => "badge bg-primary",
+                    ASM_C_3.Models.OrderStatus.Shipped => "badge bg-info text-dark",
+                    ASM_C_3.Models.OrderStatus.Completed => "badge bg-success",
+                    ASM_C_3.Models.OrderStatus.CancelRequested => "badge bg-secondary",
+                    ASM_C_3.Models.OrderStatus.Cancelled => "badge bg-danger",
+                    _ => "badge bg-light text-dark"
+                };
+
                 <tr>
-                    <td>
-                        @if (invoice.User != null)
-                        {
-                            @invoice.User.FullName
-                        }
-                        else
-                        {
-                            <span class="text-muted">Unknown</span>
-                        }
-                    </td>
-
+                    <td>@(invoice.User?.FullName ?? "Unknown")</td>
                     <td>@invoice.PayMethod</td>
-
                     <td>@invoice.CreatedDate.ToString("dd/MM/yyyy HH:mm")</td>
-
-                    <td class="text-end">
-                        @String.Format("{0:N0} ₫", invoice.TotalAmount)
-                    </td>
-
+                    <td><span class="@statusBadge">@status</span></td>
+                    <td class="text-end">@String.Format("{0:N0} ₫", invoice.TotalAmount)</td>
                     <td class="text-center">
                         <div class="btn-group btn-group-sm" role="group">
                             <a asp-action="Details" asp-route-id="@invoice.InvoiceId" class="btn btn-outline-secondary">Details</a>
-                            <a asp-action="Edit" asp-route-id="@invoice.InvoiceId" class="btn btn-outline-primary">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@invoice.InvoiceId" class="btn btn-outline-danger">Delete</a>
+
+                            @* ----- ADMIN / STAFF ACTIONS ----- *@
+                            @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+                            {
+                                if (invoice.Status == ASM_C_3.Models.OrderStatus.Pending)
+                                {
+                                    <form asp-action="ConfirmOrder" method="post" class="d-inline me-1">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@invoice.InvoiceId" />
+                                        <button type="submit" class="btn btn-success">Confirm</button>
+                                    </form>
+
+                                    <form asp-action="CancelOrder" method="post" class="d-inline ms-1">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@invoice.InvoiceId" />
+                                        <button type="submit" class="btn btn-danger">Cancel</button>
+                                    </form>
+                                }
+                                else if (invoice.Status == ASM_C_3.Models.OrderStatus.Confirmed)
+                                {
+                                    <form asp-action="MarkAsShipped" method="post" class="d-inline me-1">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@invoice.InvoiceId" />
+                                        <button type="submit" class="btn btn-info text-white">Mark Shipped</button>
+                                    </form>
+
+                                    <form asp-action="CancelOrder" method="post" class="d-inline ms-1">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@invoice.InvoiceId" />
+                                        <button type="submit" class="btn btn-danger">Cancel</button>
+                                    </form>
+                                }
+                                else if (invoice.Status == ASM_C_3.Models.OrderStatus.CancelRequested)
+                                {
+                                    <form asp-action="ApproveCancel" method="post" class="d-inline me-1">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@invoice.InvoiceId" />
+                                        <button type="submit" class="btn btn-danger">Approve Cancel</button>
+                                    </form>
+
+                                    <form asp-action="RejectCancel" method="post" class="d-inline ms-1">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@invoice.InvoiceId" />
+                                        <button type="submit" class="btn btn-secondary">Reject</button>
+                                    </form>
+                                }
+                            }
+
+                            @* ----- USER ACTIONS ----- *@
+                            @if (User.IsInRole("User"))
+                            {
+                                if (invoice.Status == ASM_C_3.Models.OrderStatus.Pending)
+                                {
+                                    <form asp-action="RequestCancel" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@invoice.InvoiceId" />
+                                        <button type="submit" class="btn btn-warning text-dark">Request Cancel</button>
+                                    </form>
+                                }
+                                else if (invoice.Status == ASM_C_3.Models.OrderStatus.Shipped)
+                                {
+                                    <form asp-action="ConfirmReceived" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@invoice.InvoiceId" />
+                                        <button type="submit" class="btn btn-success">I Received</button>
+                                    </form>
+                                }
+                            }
                         </div>
                     </td>
                 </tr>

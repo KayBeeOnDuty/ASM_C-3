@@ -8,21 +8,23 @@ namespace ASM_C_3.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ProductId { get; set; } // Mã sản phẩm
-
+        [Range(1, int.MaxValue, ErrorMessage = "Select a category")]
+        public int CategoryId { get; set; } // Mã danh mục
         [Required, StringLength(150)]
         public string Name { get; set; } = string.Empty; // Tên sản phẩm (VD: Brown Sugar Milk Tea)
+        [Range(0, int.MaxValue, ErrorMessage = "Price must be >= 0")]
+        public int Price { get; set; }
+        [Required, StringLength(500)]
+        public string? Description { get; set; } = string.Empty; // Mô tả sản phẩm
 
-        public string? Description { get; set; } // Mô tả sản phẩm
 
-        [StringLength(200)]
         public string? ImageUrl { get; set; } // Hình ảnh sản phẩm
 
         public int SupplierId { get; set; } // Mã nhà cung cấp
-        public Supplier? Supplier { get; set; }
 
-        public int CategoryId { get; set; } // Mã danh mục
-        public Category? Category { get; set; }
 
-        public ICollection<Variant>? Variants { get; set; } // Các biến thể (size, topping,…)
+        [ValidateNever] public Category Category { get; set; } = null!;
+        [ValidateNever] public Supplier? Supplier { get; set; }
+        [ValidateNever] public ICollection<Variant> Variants { get; set; } = new List<Variant>();// Các biến thể (size, topping,…)
     }
 }

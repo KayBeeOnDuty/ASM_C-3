@@ -3,30 +3,47 @@
     ViewData["Title"] = "Invoice Details";
 }
 
-<h2>Invoice Details</h2>
+<h2 class="mb-3">Invoice Details</h2>
 
-<div>
-    <h4>Invoice</h4>
-    <hr />
+<div class="card shadow-sm p-4">
+    <h4 class="mb-3">Invoice Information</h4>
     <dl class="row">
-        <dt class="col-sm-2">Invoice ID</dt>
-        <dd class="col-sm-10">@Model.InvoiceId</dd>
+        <dt class="col-sm-3">Invoice ID</dt>
+        <dd class="col-sm-9">@Model.InvoiceId</dd>
 
-        <dt class="col-sm-2">Customer</dt>
-        <dd class="col-sm-10">@Model.User?.FullName</dd>
+        <dt class="col-sm-3">Customer</dt>
+        <dd class="col-sm-9">@Model.User?.FullName</dd>
 
-        <dt class="col-sm-2">Payment Method</dt>
-        <dd class="col-sm-10">@Model.PayMethod</dd>
+        <dt class="col-sm-3">Payment Method</dt>
+        <dd class="col-sm-9">@Model.PayMethod</dd>
 
-        <dt class="col-sm-2">Created Date</dt>
-        <dd class="col-sm-10">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</dd>
+        <dt class="col-sm-3">Created Date</dt>
+        <dd class="col-sm-9">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</dd>
 
-        <dt class="col-sm-2">Total Amount</dt>
-        <dd class="col-sm-10">@Model.TotalAmount.ToString("C")</dd>
+        <dt class="col-sm-3">Total Amount</dt>
+        <dd class="col-sm-9 fw-bold">@String.Format("{0:N0} ₫", Model.TotalAmount)</dd>
+
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">
+            @{
+                var statusText = Model.Status.ToString();
+                string badgeClass = Model.Status switch
+                {
+                    ASM_C_3.Models.OrderStatus.Pending => "bg-warning text-dark",
+                    ASM_C_3.Models.OrderStatus.Confirmed => "bg-primary",
+                    ASM_C_3.Models.OrderStatus.Shipped => "bg-info text-dark",
+                    ASM_C_3.Models.OrderStatus.Completed => "bg-success",
+                    ASM_C_3.Models.OrderStatus.CancelRequested => "bg-secondary",
+                    ASM_C_3.Models.OrderStatus.Cancelled => "bg-danger",
+                    _ => "bg-light text-dark"
+                };
+            }
+            <span class="badge @badgeClass px-3 py-2">@statusText</span>
+        </dd>
     </dl>
 
-    <h5>Invoice Details</h5>
-    <table class="table table-bordered mt-3">
+    <h5 class="mt-4 mb-3">Invoice Items</h5>
+    <table class="table table-bordered table-striped">
         <thead class="table-light">
             <tr>
                 <th>Product</th>
@@ -45,8 +62,8 @@
                         <td>@item.Variant?.Product?.Name</td>
                         <td>@item.Variant?.Name</td>
                         <td>@item.Quantity</td>
-                        <td>@item.UnitPrice.ToString("C")</td>
-                        <td>@item.Subtotal.ToString("C")</td>
+                        <td>@String.Format("{0:N0} ₫", item.UnitPrice)</td>
+                        <td>@String.Format("{0:N0} ₫", item.SubTotal)</td>
                     </tr>
                 }
             }
@@ -59,9 +76,91 @@
         </tbody>
     </table>
 
-    <div class="mt-3">
-        <a asp-action="Edit" asp-route-id="@Model.InvoiceId" class="btn btn-primary">Edit</a>
-        <a asp-action="Index" class="btn btn-secondary ms-2">Back to List</a>
+    <!-- BUTTON ACTION AREA -->
+    <div class="mt-4 d-flex flex-wrap gap-3 justify-content-start">
+        @* ---------- ADMIN / STAFF ACTIONS ---------- *@
+        @if (User.IsInRole("Admin") || User.IsInRole("Staff"))
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary px-3 py-2 rounded-3 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+
+            @* Pending -> Confirm *@
+            if (Model.Status == ASM_C_3.Models.OrderStatus.Pending)
+            {
+                <form asp-action="ConfirmOrder" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.InvoiceId" />
+                    <button type="submit" class="btn btn-success px-3 py-2 rounded-3 shadow-sm">
+                        <i class="bi bi-check-circle me-1"></i> Confirm Order
+                    </button>
+                </form>
+            }
+
+            @* Confirmed -> Shipped *@
+            if (Model.Status == ASM_C_3.Models.OrderStatus.Confirmed)
+            {
+                <form asp-action="MarkAsShipped" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.InvoiceId" />
+                    <button type="submit" class="btn btn-info text-white px-3 py-2 rounded-3 shadow-sm">
+                        <i class="bi bi-truck me-1"></i> Mark as Shipped
+                    </button>
+                </form>
+            }
+
+            @* CancelRequested -> Approve/Reject *@
+            if (Model.Status == ASM_C_3.Models.OrderStatus.CancelRequested)
+            {
+                <form asp-action="ApproveCancel" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.InvoiceId" />
+                    <button type="submit" class="btn btn-danger px-3 py-2 rounded-3 shadow-sm"
+                            onclick="return confirm('Approve cancel request for this order?');">
+                        <i class="bi bi-check-circle me-1"></i> Approve Cancel
+                    </button>
+                </form>
+
+                <form asp-action="RejectCancel" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.InvoiceId" />
+                    <button type="submit" class="btn btn-secondary px-3 py-2 rounded-3 shadow-sm"
+                            onclick="return confirm('Reject cancel request and revert to Pending?');">
+                        <i class="bi bi-x-circle me-1"></i> Reject Cancel
+                    </button>
+                </form>
+            }
+        }
+
+        @* ---------- USER ACTIONS ---------- *@
+        else if (User.IsInRole("User"))
+        {
+            <a asp-action="My" class="btn btn-outline-secondary px-3 py-2 rounded-3 shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to My Invoices
+            </a>
+
+            if (Model.Status == ASM_C_3.Models.OrderStatus.Pending)
+            {
+                <form asp-action="RequestCancel" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.InvoiceId" />
+                    <button type="submit" class="btn btn-warning text-dark px-3 py-2 rounded-3 shadow-sm"
+                            onclick="return confirm('Gửi yêu cầu hủy đơn hàng này?');">
+                        <i class="bi bi-x-circle me-1"></i> Request Cancel
+                    </button>
+                </form>
+            }
+
+            if (Model.Status == ASM_C_3.Models.OrderStatus.Shipped)
+            {
+                <form asp-action="ConfirmReceived" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.InvoiceId" />
+                    <button type="submit" class="btn btn-success px-3 py-2 rounded-3 shadow-sm">
+                        <i class="bi bi-box-seam me-1"></i> Tôi đã nhận hàng
+                    </button>
+                </form>
+            }
+        }
     </div>
 </div>
-

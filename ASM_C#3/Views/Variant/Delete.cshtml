@@ -1,0 +1,43 @@
+﻿@model ASM_C_3.Models.Variant
+
+@{
+    ViewData["Title"] = "Delete Variant";
+}
+
+<h1 class="mb-3 text-danger">Delete Variant</h1>
+
+<h5>Bạn có chắc chắn muốn xóa biến thể này không?</h5>
+
+<div class="card shadow-sm p-4 my-3">
+    <dl class="row">
+        <dt class="col-sm-3">Name</dt>
+        <dd class="col-sm-9">@Model.Name</dd>
+
+        <dt class="col-sm-3">Price</dt>
+        <dd class="col-sm-9">@Model.Price.ToString("C")</dd>
+
+        <dt class="col-sm-3">Is Available</dt>
+        <dd class="col-sm-9">
+            @if (Model.IsAvailable)
+            {
+                <span class="badge bg-success">Yes</span>
+            }
+            else
+            {
+                <span class="badge bg-danger">No</span>
+            }
+        </dd>
+
+        <dt class="col-sm-3">Product</dt>
+        <dd class="col-sm-9">@Model.Product?.Name</dd>
+    </dl>
+</div>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="VariantId" />
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>

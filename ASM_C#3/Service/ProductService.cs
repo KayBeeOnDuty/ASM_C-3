@@ -1,4 +1,5 @@
-﻿using ASM_C_3.Interface;
+﻿using ASM_C_3.Data;
+using ASM_C_3.Interface;
 using ASM_C_3.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +28,7 @@ namespace ASM_C_3.Service
         public async Task<Product?> GetByIdAsync(int id)
         {
             return await _context.Products
+                .AsNoTracking()
                 .Include(p => p.Category)
                 .Include(p => p.Supplier)
                 .Include(p => p.Variants)
@@ -43,9 +45,17 @@ namespace ASM_C_3.Service
         // Cập nhật thông tin sản phẩm
         public async Task UpdateAsync(Product product)
         {
-            _context.Products.Update(product);
+            var existingProduct = await _context.Products
+                .AsNoTracking() // Ngăn EF tracking entity cũ
+                .FirstOrDefaultAsync(p => p.ProductId == product.ProductId);
+
+            if (existingProduct == null)
+                throw new Exception("Product not found");
+
+            _context.Entry(product).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
+
 
         // Xóa sản phẩm (và các variant liên quan)
         public async Task DeleteAsync(int id)

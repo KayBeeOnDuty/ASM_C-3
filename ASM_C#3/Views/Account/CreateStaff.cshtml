@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Tạo tài khoản nhân viên";
+}
+
+<h2 class="mb-4">Tạo tài khoản nhân viên</h2>
+
+<form asp-action="CreateStaff" method="post" onsubmit="return validatePasswords()">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label" for="username">Tên đăng nhập</label>
+        <input class="form-control" id="username" name="username" required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="password">Mật khẩu (tối thiểu 6 ký tự)</label>
+        <input class="form-control" id="password" name="password" type="password" minlength="6" required />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="confirmPassword">Xác nhận mật khẩu</label>
+        <input class="form-control" id="confirmPassword" name="confirmPassword" type="password" minlength="6" required />
+    </div>
+
+    <div id="passwordError" class="text-danger mb-3" style="display:none;">
+        Mật khẩu và xác nhận mật khẩu không khớp.
+    </div>
+
+    <div class="text-danger">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    </div>
+
+    <button class="btn btn-primary" type="submit">Tạo</button>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary ms-2">Hủy</a>
+</form>
+
+@section Scripts {
+    <script>
+        function validatePasswords() {
+            const pw = document.getElementById("password").value;
+            const confirm = document.getElementById("confirmPassword").value;
+            const errorDiv = document.getElementById("passwordError");
+
+            if (pw !== confirm) {
+                errorDiv.style.display = "block";
+                return false; // Ngăn submit form
+            }
+
+            errorDiv.style.display = "none";
+            return true;
+        }
+    </script>
+}

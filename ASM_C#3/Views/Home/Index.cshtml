@@ -1,8 +1,110 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trà Nghé IT - Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-4">
+
+    <!-- 🌿 Banner -->
+    <div class="text-center p-5 rounded-4 shadow-sm mb-5"
+         style="background: linear-gradient(135deg, #fff8f0, #e8f8f5);">
+        <h1 class="fw-bold mb-3 text-brown">
+            <i class="bi bi-cup-hot-fill me-2 text-success"></i>Trà Nghé IT
+        </h1>
+        <p class="lead text-secondary mb-4">
+            Nơi hương vị trà sữa hòa quyện cùng công nghệ 🍃
+        </p>
+        <a class="btn btn-success btn-lg px-4 me-2" asp-controller="Product" asp-action="Index">
+            <i class="bi bi-shop"></i> Xem Menu
+        </a>
+        <a class="btn btn-outline-success btn-lg px-4" asp-controller="Product" asp-action="Index">
+            <i class="bi bi-bag-check"></i> Đặt hàng ngay
+        </a>
+    </div>
+
+    <!-- 💫 Giới thiệu -->
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            <img src="~/images/logo.png"
+                 class="img-fluid rounded-4 shadow-sm" alt="Trà sữa Trà Nghé IT">
+        </div>
+        <div class="col-md-6 mt-4 mt-md-0">
+            <h2 class="fw-bold text-success mb-3">Về Trà Nghé IT</h2>
+            <p class="text-secondary">
+                Trà Nghé IT là quán trà sữa mang phong cách hiện đại, nơi bạn có thể vừa nhâm nhi ly trà sữa thơm ngon,
+                vừa tận hưởng không gian công nghệ đầy cảm hứng.
+                Chúng tôi tự hào phục vụ các loại trà sữa được pha chế từ nguyên liệu chọn lọc,
+                mang đến hương vị đậm đà, dễ thương và “chuẩn vị dân IT”.
+            </p>
+            <p class="text-secondary">
+                Ghé ngay để thưởng thức các món như <strong>Trà sữa full topping</strong>,
+                <strong>Trà đào</strong> và nhiều món khác! 💚
+            </p>
+        </div>
+    </div>
+
+    <!-- 🍹 Sản phẩm nổi bật -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold text-brown mb-3">Best Sellers</h2>
+        <p class="text-muted">Những món được khách hàng yêu thích nhất tại Trà Nghé IT</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <img src="~/images/0c55ed93-acff-4382-82da-e050708c8921_HTSuaFull.jpg"
+                     class="card-img-top rounded-top-4" alt="Hồng trà sữa Full-Topping">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">Hồng trà sữa Full-Topping</h5>
+                    <p class="text-muted mb-3">Hương vị truyền thống – ngọt ngào và đậm đà.</p>
+                    <a asp-controller="Product" asp-action="Index" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-eye"></i> Xem thêm
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <img src="~/images/be4829d9-61ee-4530-96be-378bf1b15e01_TraDau.jpg"
+                     class="card-img-top rounded-top-4" alt="Trà dâu">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">Trà dâu Đà Lạt</h5>
+                    <p class="text-muted mb-3">Vị chua ngọt thanh mát, thơm dịu nhẹ khó quên 🍑</p>
+                    <a asp-controller="Product" asp-action="Index" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-eye"></i> Xem thêm
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4">
+                <img src="~/images/b95ae55b-7aa2-4309-ba3f-cf62fcda688e_MatCha.jpg"
+                     class="card-img-top rounded-top-4" alt="Matcha Latte">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">Matcha Latte</h5>
+                    <p class="text-muted mb-3">Vị matcha Nhật Bản đậm đà, béo thơm khó cưỡng 🍵</p>
+                    <a asp-controller="Product" asp-action="Index" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-eye"></i> Xem thêm
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+<style>
+    .text-brown {
+        color: #8B4513;
+    }
+
+    .btn-success {
+        background-color: #5cb85c;
+        border: none;
+    }
+
+        .btn-success:hover {
+            background-color: #4cae4c;
+        }
+</style>
