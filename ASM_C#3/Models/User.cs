@@ -9,9 +9,6 @@ namespace ASM_C_3.Models
         public int UserId { get; set; } // Mã người dùng
 
 
-        //[Required, StringLength(100)]
-        //public string Password { get; set; } = string.Empty; // Mật khẩu
-
         [StringLength(100)]
         public string? FullName { get; set; } // Họ tên người dùng
 

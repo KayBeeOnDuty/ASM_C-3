@@ -85,34 +85,39 @@ else
     </table>
 }
 
-<!-- 🔽 Modal chọn Variant -->
+<!-- Modal chọn Variant -->
 <div class="modal fade" id="variantModal" tabindex="-1" aria-labelledby="variantModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form asp-controller="Cart" asp-action="AddToCart" method="post">
                 @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <h5 class="modal-title" id="variantModalLabel">Chọn biến thể sản phẩm</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <div class="modal-body">
+                    <input type="hidden" id="productIdInput" name="productId" />
                     <div class="mb-3">
                         <label class="form-label fw-bold">Biến thể</label>
-                        <select id="variantDropdown" name="variantId" class="form-select" required>
+                        <select id="variantDropdown" name="variantId" class="form-select form-select-lg" required>
                             <option disabled selected>Đang tải...</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Số lượng</label>
-                        <input type="number" name="quantity" class="form-control" value="1" min="1" required />
+                        <input type="number" name="quantity" class="form-control form-control-lg" value="1" min="1" required />
                     </div>
                 </div>
 
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">🛒 Thêm vào giỏ hàng</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Hủy
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-cart-plus me-1"></i>Thêm vào giỏ hàng
+                    </button>
                 </div>
             </form>
         </div>
@@ -121,32 +126,80 @@ else
 
 @section Scripts {
     <script>
-        const modal = new bootstrap.Modal(document.getElementById('variantModal'));
-        const dropdown = document.getElementById('variantDropdown');
+        let modalInstance = null;
 
         function showVariantModal(productId, productName) {
-            document.getElementById('variantModalLabel').innerText = `Chọn biến thể cho "${productName}"`;
-            dropdown.innerHTML = '<option disabled selected>Đang tải...</option>';
+            console.log('showVariantModal called with productId:', productId, 'productName:', productName);
+            
+            // Kiểm tra xem các element có tồn tại không
+            const productIdInput = document.getElementById('productIdInput');
+            const quantityInput = document.querySelector('input[name="quantity"]');
+            const variantModalLabel = document.getElementById('variantModalLabel');
+            const variantDropdown = document.getElementById('variantDropdown');
+            const variantModal = document.getElementById('variantModal');
+            
+            if (!productIdInput || !quantityInput || !variantModalLabel || !variantDropdown || !variantModal) {
+                console.error('Một số element không tồn tại:', {
+                    productIdInput: !!productIdInput,
+                    quantityInput: !!quantityInput,
+                    variantModalLabel: !!variantModalLabel,
+                    variantDropdown: !!variantDropdown,
+                    variantModal: !!variantModal
+                });
+                return;
+            }
+            
+            // Khởi tạo modal nếu chưa có
+            if (!modalInstance) {
+                modalInstance = new bootstrap.Modal(variantModal, { backdrop: false, keyboard: true });
+                console.log('Modal instance created');
+            }
+            
+            productIdInput.value = productId;
+            quantityInput.value = 1;
+            variantModalLabel.innerText = `Chọn biến thể cho "${productName}"`;
+            variantDropdown.innerHTML = '<option disabled selected>Đang tải...</option>';
 
-            fetch(`/Variant/GetByProduct?productId=${productId}`)
-                .then(response => response.json())
+            const url = `/Variant/GetByProduct?productId=${productId}`;
+            console.log('Fetching from URL:', url);
+
+            fetch(url)
+                .then(response => {
+                    console.log('Response status:', response.status, 'ok:', response.ok);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return response.json();
+                })
                 .then(data => {
-                    dropdown.innerHTML = '';
-                    if (data.message) {
-                        dropdown.innerHTML = `<option disabled>${data.message}</option>`;
-                    } else {
+                    console.log('Data received:', data);
+                    variantDropdown.innerHTML = '';
+                    
+                    if (data && Array.isArray(data) && data.length > 0) {
                         data.forEach(v => {
                             const opt = document.createElement('option');
                             opt.value = v.variantId;
                             opt.textContent = `${v.name} - ${v.price.toLocaleString()}₫`;
-                            dropdown.appendChild(opt);
+                            variantDropdown.appendChild(opt);
                         });
+                        variantDropdown.selectedIndex = 0;
+                        console.log('Options added:', data.length);
+                    } else if (data && data.message) {
+                        variantDropdown.innerHTML = `<option disabled>${data.message}</option>`;
+                        console.log('Message:', data.message);
+                    } else {
+                        variantDropdown.innerHTML = '<option disabled>Không có biến thể nào</option>';
                     }
-                    modal.show();
+                    
+                    if (modalInstance) {
+                        console.log('Showing modal');
+                        modalInstance.show();
+                    }
                 })
                 .catch(err => {
-                    dropdown.innerHTML = `<option disabled>Lỗi tải dữ liệu</option>`;
-                    console.error(err);
+                    console.error('Fetch error:', err);
+                    variantDropdown.innerHTML = `<option disabled>Lỗi: ${err.message}</option>`;
+                    if (modalInstance) {
+                        modalInstance.show();
+                    }
                 });
         }
     </script>
